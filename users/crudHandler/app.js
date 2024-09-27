@@ -14,12 +14,12 @@ const { unmarshall, marshall } = require("@aws-sdk/util-dynamodb");
 const client = new DynamoDBClient({ region: "ap-south-1" });
 
 // Helper function to send responses
-const sendResponse = (statusCode, body) => {
+function sendResponse(statusCode, body) {
   return {
     statusCode,
     body: JSON.stringify(body),
   };
-};
+}
 
 exports.handler = async (event) => {
   const items = event.body;
@@ -92,21 +92,19 @@ exports.handler = async (event) => {
           ":userIdValue": { S: itemId },
         },
       };
+
       try {
         const command = new QueryCommand(input);
         const result = await client.send(command);
-        // if (!result.Items || result.Items.length === 0) {
-        //   return sendResponse(404, { message: "Item not found" });
-        // }
-        const resultJSON = result.Items.map((item) => {
-          return {
-            userId: item.userId.S,
-            Age: item.Age.S,
-            height: item.height.N,
-            income: item.income.N,
-          };
-        });
-        return sendResponse(200, { resultJSON }); // Wrap result in "resultJSON"
+        const resultJSON = result.Items.map((item) => ({
+          userId: item.userId.S,
+          Age: item.Age.S,
+          height: item.height.N,
+          income: item.income.N,
+        }));
+        console.log("hello im here---------");
+        console.log(sendResponse(200, { resultJSON }));
+        return sendResponse(200, { resultJSON });
       } catch (error) {
         return sendResponse(500, { message: "Failed to retrieve item", error });
       }
